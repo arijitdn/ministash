@@ -36,7 +36,7 @@ export default async function ProfilePage() {
 
   const userData = await db.billing.findFirst({
     where: {
-      email: session.user.email,
+      email: session.user.email!,
     },
   });
   
