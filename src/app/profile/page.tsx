@@ -34,34 +34,17 @@ export default async function ProfilePage() {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
-  let userData = await db.billing.findFirst({
+  const userData = await db.billing.findFirst({
     where: {
-      userId: session.user.id,
+      email: session.user.email,
     },
   });
-
-  if (!userData) {
-    await db.billing.create({
-      data: {
-        userId: session.user.id!,
-        email: session.user.email!,
-      },
-    });
-
-    userData = await db.billing.findFirst({
-      where: {
-        userId: session.user.id,
-      },
-    });
-  }
-
+  
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
     headers: {
       cookie: cookieHeader,
     },
   });
-
-  console.log(res);
 
   const { totalUsageMB, totalFiles: usedFilesLimit } = await res.json();
   const usedStorageLimit = totalUsageMB / 1000;
