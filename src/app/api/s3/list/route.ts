@@ -12,9 +12,8 @@ export async function GET(request: Request) {
     if (!forceRefresh) {
       const cached = await redis.get(cacheKey);
       if (cached) {
-        console.log("Cached");
-        return Response.json(cached);
-      } else console.log("Not cached");
+        return NextResponse.json(cached);
+      }
     }
 
     const documents = await refreshS3Cache();
