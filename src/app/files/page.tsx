@@ -2,23 +2,85 @@
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  RefreshCcw,
+  Trash2,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+  MoreVertical,
+  Download,
+  Share2,
+  Lock,
+  User,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+
+interface FileItem {
+  key: string;
+  url: string;
+  isPublic: boolean;
+  size: number;
+}
 
 export default function Files() {
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState(false);
+  const [copiedFileKey, setCopiedFileKey] = useState<string | null>(null);
+
+  const router = useRouter();
 
   async function fetchFiles(refresh = false) {
     setLoading(true);
-    const res = await fetch(`/api/s3/list${refresh ? "?refresh=true" : ""}`);
-    const data = await res.json();
-    setFiles(data.documents);
-    setLoading(false);
+    try {
+      if (refresh) {
+        await fetch("/api/s3/list?refresh=true");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      const res = await fetch("/api/s3/list");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch files");
+      }
+
+      const data = await res.json();
+
+      if (data) {
+        const enhancedFiles = data.documents.map((file: any) => ({
+          ...file,
+          isPublic: file.isPublic ?? false,
+          displayName: file.displayName ?? file.key.split("/").pop(),
+        }));
+
+        setFiles(enhancedFiles);
+      }
+    } catch (error) {
+      console.error("Failed to fetch files:", error);
+      toast.error("Failed to load files. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function removeFile(fileKey: string) {
@@ -26,15 +88,13 @@ export default function Files() {
       setIsDeleting(true);
       const fileToRemove = files.find((f) => f.key === fileKey);
       if (fileToRemove) {
-        if (fileToRemove.objectUrl) {
-          URL.revokeObjectURL(fileToRemove.objectUrl);
+        if (fileToRemove.url) {
+          URL.revokeObjectURL(fileToRemove.url);
         }
       }
 
       setFiles((prevFiles) =>
-        prevFiles.map((f) =>
-          f.key === fileKey ? { ...f, isDeleting: true } : f
-        )
+        prevFiles.map((f) => (f.key === fileKey ? { ...f } : f))
       );
 
       const response = await fetch("/api/s3/delete", {
@@ -47,26 +107,57 @@ export default function Files() {
         setIsDeleting(false);
         toast.error("Failed to remove file from storage.");
         setFiles((prevFiles) =>
-          prevFiles.map((f) =>
-            f.key === fileKey ? { ...f, isDeleting: false, error: true } : f
-          )
+          prevFiles.map((f) => (f.key === fileKey ? { ...f } : f))
         );
         return;
       }
 
       setIsDeleting(false);
-      setFiles((prevFiles) => prevFiles.filter((f) => f.key !== fileKey)); // filter by key
+      setFiles((prevFiles) => prevFiles.filter((f) => f.key !== fileKey));
       toast.success("File removed successfully");
     } catch (error) {
       setIsDeleting(false);
       toast.error("Failed to remove file from storage.");
       setFiles((prevFiles) =>
-        prevFiles.map((f) =>
-          f.key === fileKey ? { ...f, isDeleting: false, error: true } : f
-        )
+        prevFiles.map((f) => (f.key === fileKey ? { ...f } : f))
       );
     }
   }
+
+  const toggleVisibility = async (fileKey: string) => {
+    try {
+      const file = files.find((f) => f.key === fileKey);
+      const newVisibility = !file?.isPublic;
+
+      setFiles(
+        files.map((f) =>
+          f.key === fileKey ? { ...f, isPublic: newVisibility } : f
+        )
+      );
+
+      toast.success(`File is now ${newVisibility ? "public" : "private"}`);
+
+      // TODO: Add API call to update file visibility
+      // const response = await fetch("/api/s3/visibility", {
+      //   method: "PUT",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ key: fileKey, isPublic: newVisibility }),
+      // });
+    } catch (error) {
+      toast.error("Failed to update file visibility");
+    }
+  };
+
+  const copyLink = async (url: string, fileKey: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedFileKey(fileKey);
+      setTimeout(() => setCopiedFileKey(null), 2000);
+      toast.success("Link copied to clipboard");
+    } catch (err) {
+      toast.error("Failed to copy link");
+    }
+  };
 
   useEffect(() => {
     fetchFiles();
@@ -75,11 +166,24 @@ export default function Files() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <Link href="/" className="text-3xl font-bold">
-          📂 MiniStash
+        <Link href="/" className="text-3xl font-bold flex items-center gap-4">
+          <Image
+            src="/icon.svg"
+            alt="MiniStash"
+            className="object-contain hidden md:block w-16"
+            height={1000}
+            width={1000}
+          />
+          MiniStash
         </Link>
         <div className="flex gap-4 items-center">
-          <ThemeToggle />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => router.push("/profile")}
+          >
+            <User />
+          </Button>
           <Button onClick={() => fetchFiles(true)}>
             <RefreshCcw /> Refresh
           </Button>
@@ -87,70 +191,285 @@ export default function Files() {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <span className="ml-2">Loading files...</span>
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {files.map((doc) => {
-            const fileName = doc.key.split("/").pop();
-            const isImage = /\.(jpe?g|png|gif|webp)$/i.test(fileName);
-            const isPdf = /\.pdf$/i.test(fileName);
+          {files.length > 0 &&
+            files.map((doc) => {
+              const fileName = doc.key;
 
-            return (
-              <div
-                key={doc.key}
-                className="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200"
-              >
-                <div className="relative aspect-square rounded-lg overflow-hidden">
-                  <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                    <img
-                      src={doc.url}
-                      alt={fileName}
-                      className="w-full h-full object-cover"
-                    />
-                  </a>
+              return (
+                <div
+                  key={doc.key}
+                  className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 group"
+                >
+                  <div className="relative aspect-square rounded-lg overflow-hidden">
+                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={doc.url || "/placeholder.svg"}
+                        alt={fileName}
+                        className="w-full h-full object-cover"
+                      />
+                    </a>
 
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => removeFile(doc.key)}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </Button>
-
-                  {error && (
-                    <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                      <div className="text-white font-medium">Error</div>
+                    {/* Visibility Badge */}
+                    <div className="absolute top-2 left-2">
+                      <Badge
+                        variant={doc.isPublic ? "default" : "secondary"}
+                        className={`text-xs ${
+                          doc.isPublic
+                            ? "bg-green-600 hover:bg-green-600"
+                            : "bg-primary hover:bg-primary"
+                        }`}
+                      >
+                        {doc.isPublic ? (
+                          <>
+                            <Eye size={10} className="mr-1" />
+                            Public
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff size={10} className="mr-1" />
+                            Private
+                          </>
+                        )}
+                      </Badge>
                     </div>
-                  )}
+
+                    {/* Action Menu */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-8 w-8 bg-primary hover:bg-orange-400 cursor-pointer border-0"
+                          >
+                            <MoreVertical size={16} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48">
+                          <DropdownMenuItem
+                            onClick={() => toggleVisibility(doc.key)}
+                          >
+                            {doc.isPublic ? (
+                              <>
+                                <EyeOff size={16} className="mr-2" />
+                                {doc.isPublic ? "Make Private" : "Make Public"}
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={16} className="mr-2" />
+                                {doc.isPublic ? "Make Private" : "Make Public"}
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => copyLink(doc.url, doc.key)}
+                          >
+                            {copiedFileKey === doc.key ? (
+                              <>
+                                <Check
+                                  size={16}
+                                  className="mr-2 text-green-500"
+                                />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={16} className="mr-2" />
+                                Copy Link
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <a href={doc.url} download>
+                              <Download size={16} className="mr-2" />
+                              Download
+                            </a>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share2 size={16} className="mr-2" />
+                            Share
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => removeFile(doc.key)}
+                            className="text-red-600 focus:text-red-600"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
+                            {isDeleting ? "Deleting" : "Delete"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+
+                  <div className="p-3">
+                    <div className="text-sm text-center text-gray-700 dark:text-gray-300 truncate mb-2">
+                      {fileName}
+                    </div>
+
+                    {/* Quick Actions */}
+                    {/* Phone View */}
+                    <div className="flex justify-center gap-1 md:hidden">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex justify-center"
+                            >
+                              {doc.isPublic ? (
+                                <Lock size={12} className="mr-1" />
+                              ) : (
+                                <Eye size={12} className="mr-1" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2"
+                              onClick={() => copyLink(doc.url, doc.key)}
+                            >
+                              {copiedFileKey === doc.key ? (
+                                <Check size={12} className="text-green-500" />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {copiedFileKey === doc.key
+                                ? "Copied!"
+                                : "Copy Link"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-8 px-2"
+                              onClick={() => removeFile(doc.key)}
+                            >
+                              <Trash2 size={12} className="mr-1" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete Document</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <div className="hidden md:flex md:items-center gap-1 flex-col md:flex-row">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 h-8 text-xs"
+                            >
+                              {doc.isPublic ? (
+                                <Lock size={12} className="mr-1" />
+                              ) : (
+                                <Eye size={12} className="mr-1" />
+                              )}
+                              {doc.isPublic ? "Make Private" : "Make Public"}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {doc.isPublic ? "Make Private" : "Make Public"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2"
+                              onClick={() => copyLink(doc.url, doc.key)}
+                            >
+                              {copiedFileKey === doc.key ? (
+                                <Check size={12} className="text-green-500" />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {copiedFileKey === doc.key
+                                ? "Copied!"
+                                : "Copy Link"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-8 px-2"
+                              disabled={isDeleting}
+                              onClick={() => removeFile(doc.key)}
+                            >
+                              {isDeleting ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              ) : (
+                                <Trash2 size={12} className="mr-1" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete Document</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
                 </div>
+              );
+            })}
+        </div>
+      )}
 
-                {/* {isImage ? (
-                    <img
-                      src={doc.url}
-                      alt={fileName}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : isPdf ? (
-                    <div className="w-full h-48 flex items-center justify-center bg-red-100">
-                      <span className="text-red-600 font-bold">PDF</span>
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 flex items-center justify-center bg-gray-100">
-                      <span className="text-gray-500 text-sm">No preview</span>
-                    </div>
-                  )} */}
-                <div className="p-2 text-sm text-center text-gray-700 truncate">
-                  {fileName}
-                </div>
-              </div>
-            );
-          })}
+      {files.length === 0 && !loading && (
+        <div className="text-center py-12 flex flex-col justify-center h-[60vh]">
+          <div className="text-6xl mb-4">📁</div>
+          <h3 className="text-xl font-medium mb-2">No files uploaded yet</h3>
+          <p className="text-gray-500">Upload your first file to get started</p>
         </div>
       )}
     </div>

@@ -1,16 +1,31 @@
 "use client";
 
 import { ThemeToggle } from "./ui/ThemeToggle";
-import { FileBrowserButton } from "./FileBrowserButton";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "./ui/button";
+import { FolderOpen, User } from "lucide-react";
 
 export const SideIcons = () => {
   const path = usePathname();
+  const router = useRouter();
 
   return (
     <div className="fixed space-x-3 top-4 right-4">
-      {path !== "/files" && <ThemeToggle />}
-      {path !== "/files" && <FileBrowserButton />}
+      {path !== "/files" && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => router.push("/profile")}
+        >
+          <User />
+        </Button>
+      )}
+      {path !== "/files" && (
+        <Button variant="outline" onClick={() => router.push("/files")}>
+          <FolderOpen />
+          <span>Files</span>
+        </Button>
+      )}
     </div>
   );
 };

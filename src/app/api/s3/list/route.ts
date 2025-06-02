@@ -17,7 +17,6 @@ export async function GET(request: Request) {
     }
 
     const documents = await refreshS3Cache();
-
     return NextResponse.json({ documents: documents });
   } catch (error) {
     console.error(error);

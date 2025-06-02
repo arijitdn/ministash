@@ -3,11 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { FolderOpen } from "lucide-react";
-import { FileBrowserButton } from "@/components/FileBrowserButton";
-import { headers } from "next/headers";
-import { SideIcons } from "@/components/SideIcons";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,16 +29,8 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SideIcons />
-          {children}
-          <Toaster richColors closeButton />
-        </ThemeProvider>
+        {children}
+        <Toaster richColors closeButton />
       </body>
     </html>
   );
