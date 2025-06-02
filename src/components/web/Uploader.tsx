@@ -6,11 +6,26 @@ import { Button } from "../ui/button";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 import { Loader2, Trash2 } from "lucide-react";
 import { refreshS3Cache } from "@/lib/refresh-s3-cache";
+import { plans } from "@/lib/plans";
+import { createId } from "@paralleldrive/cuid2";
 
-export function Uploader() {
+export function Uploader({
+  userId,
+  maxLimit,
+  maxFilesUploadLimit,
+  currentPlan,
+  currentUsedFiles,
+  currentUsedStorage,
+}: {
+  userId: string;
+  maxLimit: number;
+  maxFilesUploadLimit: number;
+  currentUsedFiles: number;
+  currentUsedStorage: number;
+  currentPlan: "FREE" | "BASIC" | "PRO" | "CUSTOM";
+}) {
   const [files, setFiles] = useState<
     Array<{
       id: string;
@@ -128,7 +143,7 @@ export function Uploader() {
             );
 
             toast.success("File uploaded successfully");
-            await refreshS3Cache();
+            await refreshS3Cache(userId);
             resolve();
           } else {
             reject(new Error(`Upload failed with status: ${xhr.status}`));
@@ -156,24 +171,43 @@ export function Uploader() {
     }
   };
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length) {
-      setFiles((prevFiles) => [
-        ...prevFiles,
-        ...acceptedFiles.map((file) => ({
-          id: uuidv4(),
-          file,
-          uploading: false,
-          progress: 0,
-          isDeleting: false,
-          error: false,
-          objectUrl: URL.createObjectURL(file),
-        })),
-      ]);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const storageLimitInBytes = plans[currentPlan].storageLimit * 1024 * 1024;
 
+      const newFiles = acceptedFiles.map((file) => ({
+        id: createId(),
+        file,
+        uploading: false,
+        progress: 0,
+        isDeleting: false,
+        error: false,
+        objectUrl: URL.createObjectURL(file),
+      }));
+      const combinedFiles = [...files, ...newFiles];
+
+      const totalFilesCount = currentUsedFiles + combinedFiles.length;
+      const totalSizeBytes =
+        currentUsedStorage * 1024 * 1024 +
+        combinedFiles.reduce((acc, f) => acc + f.file.size, 0);
+
+      if (totalFilesCount > maxLimit) {
+        toast.error(`You can only upload up to ${maxLimit} files in total.`);
+        return;
+      }
+
+      if (totalSizeBytes > storageLimitInBytes) {
+        toast.error(
+          `Uploading these files exceeds your storage limit of ${plans[currentPlan].storageLimit} MB.`
+        );
+        return;
+      }
+
+      setFiles(combinedFiles);
       acceptedFiles.forEach(uploadFile);
-    }
-  }, []);
+    },
+    [files, currentUsedFiles, currentUsedStorage, maxLimit, currentPlan]
+  );
 
   const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {
     if (fileRejection.length) {
@@ -186,7 +220,9 @@ export function Uploader() {
       );
 
       if (toomanyFiles) {
-        toast.error("Too many files selected, max is 5");
+        toast.error(
+          `You can only upload upto ${maxFilesUploadLimit} files at a time`
+        );
       }
 
       if (fileSizetoBig) {
@@ -198,7 +234,7 @@ export function Uploader() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     onDropRejected: rejectedFiles,
-    maxFiles: 5,
+    maxFiles: maxFilesUploadLimit,
     maxSize: 1024 * 1024 * 10, // 10mb
     accept: {
       "image/*": [],

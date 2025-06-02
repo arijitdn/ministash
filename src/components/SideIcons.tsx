@@ -10,7 +10,7 @@ export const SideIcons = () => {
   const router = useRouter();
 
   return (
-    <div className="fixed space-x-3 top-4 right-4">
+    <div className="absolute space-x-3 top-4 right-4">
       {path !== "/files" && (
         <Button
           variant="outline"

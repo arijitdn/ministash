@@ -11,28 +11,81 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  User,
-  Settings,
-  HelpCircle,
-  LogOut,
-  Lock,
-  Bell,
-  Shield,
-  CreditCard,
-  ChevronRight,
-} from "lucide-react";
+import { User, HelpCircle, Lock, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SideIcons } from "@/components/SideIcons";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/LogoutButton";
+import db from "@/lib/db";
+import { plans } from "@/lib/plans";
+import { cookies } from "next/headers";
 
 export default async function ProfilePage() {
   const session = await auth();
 
   if (!session || !session.user) redirect("/api/auth/signin");
+
+  const cookieStore = cookies();
+
+  const cookieHeader = (await cookieStore)
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+
+  let userData = await db.billing.findFirst({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
+  if (!userData) {
+    await db.billing.create({
+      data: {
+        userId: session.user.id!,
+        email: session.user.email!,
+      },
+    });
+
+    userData = await db.billing.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+    });
+  }
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
+    headers: {
+      cookie: cookieHeader,
+    },
+  });
+
+  console.log(res);
+
+  const { totalUsageMB, totalFiles: usedFilesLimit } = await res.json();
+  const usedStorageLimit = totalUsageMB / 1000;
+  const totalUsageMBNum = parseFloat(totalUsageMB);
+  const usageInGB = totalUsageMBNum / 1000;
+
+  const usedStorageLimitDisplay =
+    usageInGB < 1
+      ? `${totalUsageMBNum.toFixed(2)} MB`
+      : `${usageInGB.toFixed(2)} GB`;
+
+  const currentPlan = userData?.plan ?? "FREE";
+  const currentPrice =
+    plans[(userData?.plan ?? "FREE") as keyof typeof plans].price;
+
+  const currentStorageLimit =
+    plans[(userData?.plan ?? "FREE") as keyof typeof plans].storageLimit / 1000;
+  const currentFilesLimit =
+    plans[(userData?.plan ?? "FREE") as keyof typeof plans].filesLimit;
+  const currentUploadLimit =
+    plans[(userData?.plan ?? "FREE") as keyof typeof plans].uploadLimit;
+
+  const storageUsedPercent = (usedStorageLimit / currentStorageLimit) * 100;
+  const filesUsedPercent = (usedFilesLimit / currentFilesLimit) * 100;
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-gray-100">
@@ -75,7 +128,7 @@ export default async function ProfilePage() {
                     {session.user.email}
                   </CardDescription>
                   <Badge className="mt-2 bg-[#E74C3C] hover:bg-[#E74C3C]/80">
-                    Pro Plan
+                    {currentPlan} Plan
                   </Badge>
                 </div>
               </CardHeader>
@@ -115,17 +168,21 @@ export default async function ProfilePage() {
                   <CardHeader>
                     <CardTitle>Storage Usage</CardTitle>
                     <CardDescription>
-                      You've used 65% of your storage
+                      You've used {storageUsedPercent.toFixed(2)}% of your
+                      storage
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span>6.5 GB used</span>
-                          <span>10 GB total</span>
+                          <span>{usedStorageLimitDisplay}</span>
+                          <span>{currentStorageLimit} GB total</span>
                         </div>
-                        <Progress value={65} className="h-2 bg-gray-700">
+                        <Progress
+                          value={storageUsedPercent}
+                          className="h-2 bg-gray-700"
+                        >
                           <div className="h-full bg-[#E74C3C] rounded-full" />
                         </Progress>
                       </div>
@@ -133,9 +190,14 @@ export default async function ProfilePage() {
                       <div>
                         <div className="flex justify-between text-sm mb-1">
                           <span>Files</span>
-                          <span>432 / 1000</span>
+                          <span>
+                            {usedFilesLimit} / {currentFilesLimit}
+                          </span>
                         </div>
-                        <Progress value={43} className="h-2 bg-gray-700">
+                        <Progress
+                          value={filesUsedPercent}
+                          className="h-2 bg-gray-700"
+                        >
                           <div className="h-full bg-[#E74C3C] rounded-full" />
                         </Progress>
                       </div>
@@ -155,17 +217,33 @@ export default async function ProfilePage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="font-medium flex items-center">
-                            <Badge className="mr-2 bg-[#E74C3C] hover:bg-[#E74C3C]/80">
-                              Pro
+                            <Badge
+                              className={`mr-2 ${
+                                currentPlan === "FREE"
+                                  ? "bg-gray-600 hover:bg-gray-700"
+                                  : "bg-[#E74C3C] hover:bg-[#E74C3C]/80"
+                              }`}
+                            >
+                              {currentPlan}
                             </Badge>
-                            $9.99/month
+                            ₹ {currentPrice}/month
                           </h3>
                           <p className="text-sm text-gray-400 mt-1">
                             Billed monthly
                           </p>
                         </div>
-                        <Button className="bg-[#E74C3C] hover:bg-[#E74C3C]/80">
-                          Upgrade Plan
+                        <Button
+                          variant={`${
+                            currentPlan !== "FREE" ? "outline" : "default"
+                          }`}
+                          className={`${
+                            currentPlan === "FREE" &&
+                            "bg-[#E74C3C] hover:bg-[#E74C3C]/80"
+                          }`}
+                        >
+                          {currentPlan !== "FREE"
+                            ? "Cancel Subscription"
+                            : "Upgrade Plan"}
                         </Button>
                       </div>
 
@@ -173,56 +251,39 @@ export default async function ProfilePage() {
 
                       <div className="space-y-2">
                         <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-[#E74C3C] mr-2" />
-                          <span className="text-sm">10 GB storage</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-[#E74C3C] mr-2" />
-                          <span className="text-sm">1,000 file limit</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-[#E74C3C] mr-2" />
-                          <span className="text-sm">Priority support</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border border-gray-800 p-4 bg-gray-800/30">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium flex items-center">
-                            <Badge className="mr-2 bg-gray-600 hover:bg-gray-600/80">
-                              Enterprise
-                            </Badge>
-                            Custom pricing
-                          </h3>
-                          <p className="text-sm text-gray-400 mt-1">
-                            For teams and businesses
-                          </p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="border-gray-700 text-gray-300 hover:bg-gray-700"
-                        >
-                          Contact Sales
-                        </Button>
-                      </div>
-
-                      <Separator className="my-4 bg-gray-700" />
-
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-gray-500 mr-2" />
-                          <span className="text-sm">Unlimited storage</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-gray-500 mr-2" />
-                          <span className="text-sm">Unlimited files</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-gray-500 mr-2" />
+                          <div
+                            className={`h-2 w-2 rounded-full ${
+                              currentPlan === "FREE"
+                                ? "bg-gray-600 hover:bg-gray-700"
+                                : "bg-[#E74C3C] hover:bg-[#E74C3C]/80"
+                            } mr-2`}
+                          />
                           <span className="text-sm">
-                            24/7 dedicated support
+                            {currentStorageLimit} GB storage
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div
+                            className={`h-2 w-2 rounded-full ${
+                              currentPlan === "FREE"
+                                ? "bg-gray-600 hover:bg-gray-700"
+                                : "bg-[#E74C3C] hover:bg-[#E74C3C]/80"
+                            } mr-2`}
+                          />
+                          <span className="text-sm">
+                            {currentFilesLimit} file limit
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div
+                            className={`h-2 w-2 rounded-full ${
+                              currentPlan === "FREE"
+                                ? "bg-gray-600 hover:bg-gray-700"
+                                : "bg-[#E74C3C] hover:bg-[#E74C3C]/80"
+                            } mr-2`}
+                          />
+                          <span className="text-sm">
+                            Upload {currentUploadLimit} files at a time
                           </span>
                         </div>
                       </div>

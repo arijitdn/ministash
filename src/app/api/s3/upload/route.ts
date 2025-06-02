@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
+import { createId } from "@paralleldrive/cuid2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3 } from "@/lib/S3Client";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
+import db from "@/lib/db";
 
 const uploadRequestSchema = z.object({
   filename: z.string(),
@@ -13,6 +15,26 @@ const uploadRequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userData = await db.billing.findFirst({
+      where: {
+        email: session.user.email ?? "",
+      },
+    });
+
+    if (!userData) {
+      return NextResponse.json(
+        { error: "Please re-login to fix this issue" },
+        { status: 401 }
+      );
+    }
+
+    const userId = userData.userId;
+
     const body = await request.json();
     const validation = uploadRequestSchema.safeParse(body);
 
@@ -24,8 +46,7 @@ export async function POST(request: Request) {
     }
 
     const { filename, contentType, size } = validation.data;
-
-    const uniqueKey = `${uuidv4()}-${filename}`;
+    const uniqueKey = `${userId}/${filename}-${createId()}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME,

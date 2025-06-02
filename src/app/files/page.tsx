@@ -54,11 +54,8 @@ export default function Files() {
   async function fetchFiles(refresh = false) {
     setLoading(true);
     try {
-      if (refresh) {
-        await fetch("/api/s3/list?refresh=true");
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-      const res = await fetch("/api/s3/list");
+      const url = refresh ? "/api/s3/list?refresh=true" : "/api/s3/list";
+      const res = await fetch(url);
 
       if (!res.ok) {
         throw new Error("Failed to fetch files");
@@ -70,7 +67,7 @@ export default function Files() {
         const enhancedFiles = data.documents.map((file: any) => ({
           ...file,
           isPublic: file.isPublic ?? false,
-          displayName: file.displayName ?? file.key.split("/").pop(),
+          displayName: file.key.split("/")[1],
         }));
 
         setFiles(enhancedFiles);
@@ -136,13 +133,6 @@ export default function Files() {
       );
 
       toast.success(`File is now ${newVisibility ? "public" : "private"}`);
-
-      // TODO: Add API call to update file visibility
-      // const response = await fetch("/api/s3/visibility", {
-      //   method: "PUT",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ key: fileKey, isPublic: newVisibility }),
-      // });
     } catch (error) {
       toast.error("Failed to update file visibility");
     }
@@ -199,8 +189,6 @@ export default function Files() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {files.length > 0 &&
             files.map((doc) => {
-              const fileName = doc.key;
-
               return (
                 <div
                   key={doc.key}
@@ -210,7 +198,7 @@ export default function Files() {
                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
                       <img
                         src={doc.url || "/placeholder.svg"}
-                        alt={fileName}
+                        alt={doc.key.split("/")[1]}
                         className="w-full h-full object-cover"
                       />
                     </a>
@@ -316,7 +304,7 @@ export default function Files() {
 
                   <div className="p-3">
                     <div className="text-sm text-center text-gray-700 dark:text-gray-300 truncate mb-2">
-                      {fileName}
+                      {doc.key.split("/")[1]}
                     </div>
 
                     {/* Quick Actions */}

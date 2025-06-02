@@ -1,8 +1,26 @@
 import { SideIcons } from "@/components/SideIcons";
 import { Uploader } from "@/components/web/Uploader";
+import { auth } from "@/lib/auth";
+import db from "@/lib/db";
+import { plans } from "@/lib/plans";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
+  if (!session || !session.user) redirect("/api/auth/signin");
+
+  const userData = await db.billing.findFirst({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`);
+  const { totalUsageMB, totalFiles } = await res.json();
+  const maxFilesAllowedAtATime = plans[userData?.plan ?? "FREE"].uploadLimit;
+  const maxFilesAllowed = plans[userData?.plan ?? "FREE"].filesLimit;
   return (
     <>
       <SideIcons />
@@ -17,7 +35,14 @@ export default function Home() {
           />
           MiniStash
         </h1>
-        <Uploader />
+        <Uploader
+          userId={userData?.userId ?? session.user.id ?? ""}
+          maxLimit={maxFilesAllowed}
+          maxFilesUploadLimit={maxFilesAllowedAtATime}
+          currentPlan={userData?.plan ?? "FREE"}
+          currentUsedFiles={totalFiles}
+          currentUsedStorage={totalUsageMB}
+        />
       </div>
     </>
   );

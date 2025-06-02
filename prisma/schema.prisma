@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  CUSTOM
+}
+
+model Billing {
+  id     String @id @default(cuid())
+  userId String @unique
+  email  String @unique
+  plan   Plan   @default(FREE)
+}
