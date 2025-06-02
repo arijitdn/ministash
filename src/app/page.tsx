@@ -13,7 +13,7 @@ export default async function Home() {
 
   const userData = await db.billing.findFirst({
     where: {
-      userId: session.user.id,
+      email: session.user.email!,
     },
   });
 
