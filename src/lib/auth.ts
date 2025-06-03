@@ -1,32 +1,76 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import db from "./db";
+import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google],
+  providers: [
+    Google,
+    Credentials({
+      credentials: {
+        email: {},
+        password: {},
+      },
+      authorize: async (credentials) => {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const user = await db.user.findFirst({
+            where: {
+              email: credentials.email,
+              provider: "CREDENTIALS",
+            },
+          });
+
+          if (!user) return null;
+
+          const passwordMatch = await bcrypt.compare(
+            credentials.password as string,
+            user.password as string
+          );
+          if (!passwordMatch) {
+            return null;
+          }
+
+          return user;
+        } catch (error) {
+          console.log(error);
+          return null;
+        }
+      },
+    }),
+  ],
   session: {
     strategy: "jwt",
   },
   secret: process.env.AUTH_SECRET,
-  events: {
-    async signIn(message) {
-      const data = await db.billing.findFirst({
-        where: {
-          userId: message.user.id!,
-        },
-      });
-
-      if (!data) {
-        await db.billing.create({
-          data: {
-            userId: message.user.id!,
-            email: message.user.email!,
-          },
-        });
-      }
-    },
-  },
   pages: {
     signIn: "/auth/signin",
+  },
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        const existingUser = await db.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (!existingUser) {
+          await db.user.create({
+            data: {
+              name: user.name,
+              email: user.email!,
+              imageUrl: user.image ?? "",
+              password: "no_pass_google_account",
+              provider: "GOOGLE",
+              verified: true,
+            },
+          });
+        }
+      }
+      return true;
+    },
   },
 });

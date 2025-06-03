@@ -12,11 +12,16 @@ export default async function Home() {
 
   if (!session || !session.user) redirect("/api/auth/signin");
 
-  const userData = await db.billing.findFirst({
+  const userData = await db.user.findFirst({
     where: {
       email: session.user.email!,
     },
   });
+
+  if (!userData) {
+    redirect("/auth/error");
+  }
+
   const cookieStore = await cookies();
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
     headers: {

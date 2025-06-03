@@ -5,23 +5,30 @@ export default auth((req) => {
 
   const isRoot = pathname === "/";
   const isApiAuth = pathname.startsWith("/api/auth");
-  const isAuthPage = pathname === "/auth" || pathname.startsWith("/auth/");
+  const isAuthError = pathname === "/auth/error";
+  const isAuthPage =
+    (pathname === "/auth" || pathname.startsWith("/auth/")) && !isAuthError;
 
   if (!req.auth) {
-    // Allow unauthenticated access to /, /api/auth, and /auth/**
+    // Allow unauthenticated access to /, /api/auth, and /auth (except /auth/error)
     if (isRoot || isApiAuth || isAuthPage) {
       return;
+    }
+    // Block /auth/error for unauthenticated users
+    if (isAuthError) {
+      const newUrl = new URL("/api/auth/signin", req.nextUrl.origin);
+      return Response.redirect(newUrl);
     }
     // Redirect all other unauthenticated requests to sign in
     const newUrl = new URL("/api/auth/signin", req.nextUrl.origin);
     return Response.redirect(newUrl);
   } else {
-    // If authenticated, block / and /auth/**
+    // If authenticated, block / and /auth/** except /auth/error
     if (isRoot || isAuthPage) {
-      const newUrl = new URL("/files", req.nextUrl.origin); // or wherever you want to redirect
+      const newUrl = new URL("/files", req.nextUrl.origin);
       return Response.redirect(newUrl);
     }
-    // Allow all other authenticated requests
+    // Allow /auth/error and all other authenticated requests
     return;
   }
 });

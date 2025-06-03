@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +15,44 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import Image from "next/image";
 import { ContinueWithGoogle } from "@/components/ContinueWithGoogle";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signUpAction } from "@/lib/actions/signup";
+import { toast } from "sonner";
+
+export const signUpSchema = z.object({
+  firstName: z.string().min(3),
+  lastName: z.string().min(3),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 export default function SignUpPage() {
+  const form = useForm({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  async function registerUser(data: z.infer<typeof signUpSchema>) {
+    try {
+      const res = await signUpAction(data);
+
+      if (!res.success) {
+        return toast.error(res.error);
+      }
+
+      toast.success(res.message);
+    } catch (error) {
+      toast.error("error");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -55,7 +93,10 @@ export default function SignUpPage() {
             </div>
 
             {/* Email Sign Up Form */}
-            <form className="space-y-4">
+            <form
+              className="space-y-4"
+              onSubmit={form.handleSubmit(registerUser)}
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name</Label>
@@ -63,6 +104,7 @@ export default function SignUpPage() {
                     id="firstName"
                     placeholder="John"
                     className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                    {...form.register("firstName")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -71,6 +113,7 @@ export default function SignUpPage() {
                     id="lastName"
                     placeholder="Doe"
                     className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                    {...form.register("lastName")}
                   />
                 </div>
               </div>
@@ -81,6 +124,7 @@ export default function SignUpPage() {
                   type="email"
                   placeholder="john@example.com"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  {...form.register("email")}
                 />
               </div>
               <div className="space-y-2">
@@ -90,6 +134,7 @@ export default function SignUpPage() {
                   type="password"
                   placeholder="Create a strong password"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  {...form.register("password")}
                 />
               </div>
 

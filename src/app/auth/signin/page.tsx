@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +15,36 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import Image from "next/image";
 import { ContinueWithGoogle } from "@/components/ContinueWithGoogle";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { signInAction } from "@/lib/actions/signIn";
+
+export const signInSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 export default function SignInPage() {
+  const form = useForm({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  async function validateCredentials(data: z.infer<typeof signInSchema>) {
+    const res = await signInAction(data);
+
+    if (!res.success) {
+      return toast.error(res.error);
+    }
+
+    toast.success(res.message);
+  }
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -55,7 +85,10 @@ export default function SignInPage() {
             </div>
 
             {/* Email Sign In Form */}
-            <form className="space-y-4">
+            <form
+              className="space-y-4"
+              onSubmit={form.handleSubmit(validateCredentials)}
+            >
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -63,6 +96,7 @@ export default function SignInPage() {
                   type="email"
                   placeholder="Enter your email"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  {...form.register("email")}
                 />
               </div>
               <div className="space-y-2">
@@ -72,6 +106,7 @@ export default function SignInPage() {
                   type="password"
                   placeholder="Enter your password"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  {...form.register("password")}
                 />
               </div>
 

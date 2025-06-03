@@ -1,5 +1,5 @@
 import { redis } from "@/lib/redis";
-import { refreshS3Cache } from "@/lib/refresh-s3-cache";
+import { refreshS3Cache } from "@/lib/actions/refreshS3Cache";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import db from "@/lib/db";
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userData = await db.billing.findFirst({
+  const userData = await db.user.findFirst({
     where: {
       email: session.user.email ?? "",
     },

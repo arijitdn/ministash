@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userData = await db.billing.findFirst({
+    const userData = await db.user.findFirst({
       where: {
         email: session.user.email ?? "",
       },

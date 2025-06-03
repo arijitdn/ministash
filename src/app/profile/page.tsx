@@ -34,11 +34,15 @@ export default async function ProfilePage() {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
-  const userData = await db.billing.findFirst({
+  const userData = await db.user.findFirst({
     where: {
       email: session.user.email!,
     },
   });
+
+  if (!userData) {
+    redirect("/auth/error");
+  }
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
     headers: {
@@ -118,7 +122,7 @@ export default async function ProfilePage() {
                     />
                   </Avatar>
                   <CardTitle className="mt-4 text-xl">
-                    {session.user.name}
+                    {userData?.name}
                   </CardTitle>
                   <CardDescription className="text-gray-400">
                     {session.user.email}
