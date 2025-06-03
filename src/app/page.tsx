@@ -3,6 +3,7 @@ import { Uploader } from "@/components/web/Uploader";
 import { auth } from "@/lib/auth";
 import db from "@/lib/db";
 import { plans } from "@/lib/plans";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
@@ -16,11 +17,19 @@ export default async function Home() {
       email: session.user.email!,
     },
   });
-
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`);
+  const cookieStore = await cookies();
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
+    headers: {
+      Cookie: cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; "),
+    },
+  });
   const { totalUsageMB, totalFiles } = await res.json();
   const maxFilesAllowedAtATime = plans[userData?.plan ?? "FREE"].uploadLimit;
   const maxFilesAllowed = plans[userData?.plan ?? "FREE"].filesLimit;
+
   return (
     <>
       <SideIcons />

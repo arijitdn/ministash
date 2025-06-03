@@ -184,26 +184,29 @@ export function Uploader({
         error: false,
         objectUrl: URL.createObjectURL(file),
       }));
-      const combinedFiles = [...files, ...newFiles];
-
-      const totalFilesCount = currentUsedFiles + combinedFiles.length;
-      const totalSizeBytes =
+      const newTotalFiles = currentUsedFiles + newFiles.length;
+      const newTotalSize =
         currentUsedStorage * 1024 * 1024 +
-        combinedFiles.reduce((acc, f) => acc + f.file.size, 0);
+        newFiles.reduce((acc, f) => acc + f.file.size, 0);
 
-      if (totalFilesCount > maxLimit) {
+      console.log(newTotalFiles);
+      console.log(maxLimit);
+      console.log("currentUsedFiles:", currentUsedFiles);
+      console.log("newFiles.length:", newFiles.length);
+
+      if (newTotalFiles > maxLimit) {
         toast.error(`You can only upload up to ${maxLimit} files in total.`);
         return;
       }
 
-      if (totalSizeBytes > storageLimitInBytes) {
+      if (newTotalSize > storageLimitInBytes) {
         toast.error(
           `Uploading these files exceeds your storage limit of ${plans[currentPlan].storageLimit} MB.`
         );
         return;
       }
 
-      setFiles(combinedFiles);
+      setFiles((prev) => [...prev, ...newFiles]);
       acceptedFiles.forEach(uploadFile);
     },
     [files, currentUsedFiles, currentUsedStorage, maxLimit, currentPlan]
