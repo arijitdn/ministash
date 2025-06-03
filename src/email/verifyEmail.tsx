@@ -30,9 +30,8 @@ export function VerifyEmail({ verificationToken }: VerifyEmailProps) {
               <Heading style={h1}>Verify your email address</Heading>
               <Text style={mainText}>
                 Thanks for starting the new MiniStash account creation process.
-                We want to make sure it's really you. Please enter the following
-                verification code when prompted. If you don&apos;t want to
-                create an account, you can ignore this message.
+                We want to make sure it's really you. Please click on the link
+                below to verify your email address:
               </Text>
               <Link href={`${baseUrl}/auth/verify?token=${verificationToken}`}>
                 Verify Email Address
