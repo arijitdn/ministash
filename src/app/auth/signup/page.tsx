@@ -21,8 +21,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpAction } from "@/lib/actions/signup";
 import { toast } from "sonner";
 import { signUpSchema } from "@/lib/zod/schema";
+import { useState } from "react";
 
 export default function SignUpPage() {
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -34,17 +36,15 @@ export default function SignUpPage() {
   });
 
   async function registerUser(data: z.infer<typeof signUpSchema>) {
-    try {
-      const res = await signUpAction(data);
+    setIsLoading(true);
+    const res = await signUpAction(data);
 
-      if (!res.success) {
-        return toast.error(res.error);
-      }
-
-      toast.success(res.message);
-    } catch (error) {
-      toast.error("error");
+    if (!res.success) {
+      setIsLoading(false);
+      return toast.error(res.error);
     }
+
+    toast.success(res.message);
   }
 
   return (
@@ -152,8 +152,11 @@ export default function SignUpPage() {
                 </Label>
               </div>
 
-              <Button className="w-full bg-red-600 hover:bg-red-700 h-12">
-                Create Account
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700 h-12"
+                disabled={isLoading}
+              >
+                {isLoading ? "Authenticating..." : "Create Account"}
               </Button>
             </form>
 

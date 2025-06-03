@@ -21,8 +21,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { signInAction } from "@/lib/actions/signIn";
 import { signInSchema } from "@/lib/zod/schema";
+import { useState } from "react";
 
 export default function SignInPage() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -32,9 +35,12 @@ export default function SignInPage() {
   });
 
   async function validateCredentials(data: z.infer<typeof signInSchema>) {
+    setIsLoading(true);
+
     const res = await signInAction(data);
 
     if (!res.success) {
+      setIsLoading(false);
       return toast.error(res.error);
     }
 
@@ -121,8 +127,11 @@ export default function SignInPage() {
                 </Link>
               </div>
 
-              <Button className="w-full bg-red-600 hover:bg-red-700 h-12">
-                Sign In
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700 h-12"
+                disabled={isLoading}
+              >
+                {isLoading ? "Authenticating..." : "Sign In"}
               </Button>
             </form>
 
