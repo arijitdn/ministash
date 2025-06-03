@@ -15,6 +15,7 @@ import {
   Share2,
   Lock,
   User,
+  Upload,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -175,8 +176,18 @@ export default function Files() {
           >
             <User />
           </Button>
-          <Button onClick={() => fetchFiles(true)} className="cursor-pointer">
+          <Button
+            variant="outline"
+            onClick={() => fetchFiles(true)}
+            className="cursor-pointer"
+          >
             <RefreshCcw /> Refresh
+          </Button>
+          <Button
+            onClick={() => router.push("/upload")}
+            className="cursor-pointer"
+          >
+            <Upload /> Upload
           </Button>
         </div>
       </div>

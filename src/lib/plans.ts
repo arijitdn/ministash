@@ -8,11 +8,11 @@ export const plans = {
   BASIC: {
     storageLimit: 5000,
     filesLimit: 100,
-    uploadLimit: 10,
-    price: 250,
+    uploadLimit: 20,
+    price: 99,
   },
   PRO: {
-    storageLimit: 10000,
+    storageLimit: 100000,
     filesLimit: 500,
     uploadLimit: 100,
     price: 1000,
