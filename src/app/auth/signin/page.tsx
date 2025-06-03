@@ -45,6 +45,7 @@ export default function SignInPage() {
     }
 
     toast.success(res.message);
+    setIsLoading(false);
   }
 
   return (
@@ -98,6 +99,7 @@ export default function SignInPage() {
                   type="email"
                   placeholder="Enter your email"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  disabled={isLoading}
                   {...form.register("email")}
                 />
               </div>
@@ -108,17 +110,12 @@ export default function SignInPage() {
                   type="password"
                   placeholder="Enter your password"
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                  disabled={isLoading}
                   {...form.register("password")}
                 />
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" className="border-zinc-600" />
-                  <Label htmlFor="remember" className="text-sm text-zinc-400">
-                    Remember me
-                  </Label>
-                </div>
                 <Link
                   href="/auth/forgot-password"
                   className="text-sm text-red-400 hover:text-red-300"

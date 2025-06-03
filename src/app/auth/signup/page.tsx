@@ -11,7 +11,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import Image from "next/image";
 import { ContinueWithGoogle } from "@/components/ContinueWithGoogle";
@@ -39,14 +38,13 @@ export default function SignUpPage() {
     setIsLoading(true);
     const res = await signUpAction(data);
 
-    console.log(res);
-
     if (!res.success) {
       setIsLoading(false);
       return toast.error(res.message);
     }
 
     toast.success(res.message);
+    setIsLoading(false);
   }
 
   return (
@@ -99,6 +97,7 @@ export default function SignUpPage() {
                   <Input
                     id="firstName"
                     placeholder="John"
+                    disabled={isLoading}
                     className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
                     {...form.register("firstName")}
                   />
@@ -108,6 +107,7 @@ export default function SignUpPage() {
                   <Input
                     id="lastName"
                     placeholder="Doe"
+                    disabled={isLoading}
                     className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
                     {...form.register("lastName")}
                   />
@@ -119,6 +119,7 @@ export default function SignUpPage() {
                   id="email"
                   type="email"
                   placeholder="john@example.com"
+                  disabled={isLoading}
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
                   {...form.register("email")}
                 />
@@ -129,29 +130,10 @@ export default function SignUpPage() {
                   id="password"
                   type="password"
                   placeholder="Create a strong password"
+                  disabled={isLoading}
                   className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
                   {...form.register("password")}
                 />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox id="terms" className="border-zinc-600" />
-                <Label htmlFor="terms" className="text-sm text-zinc-400">
-                  I agree to the{" "}
-                  <Link
-                    href="/terms"
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    href="/privacy"
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    Privacy Policy
-                  </Link>
-                </Label>
               </div>
 
               <Button

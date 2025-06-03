@@ -25,14 +25,7 @@ export function VerifyEmail({ verificationToken }: VerifyEmailProps) {
         <Preview>MiniStash Email Verification</Preview>
         <Container style={container}>
           <Section style={coverSection}>
-            <Section style={imageSection}>
-              <Img
-                src="https://ms.arijit.dev/icon.svg"
-                width="75"
-                height="45"
-                alt="MiniStash's Logo"
-              />
-            </Section>
+            <Section style={imageSection}></Section>
             <Section style={upperSection}>
               <Heading style={h1}>Verify your email address</Heading>
               <Text style={mainText}>
