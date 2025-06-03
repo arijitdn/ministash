@@ -35,7 +35,7 @@ export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
         email: data.email,
         password: hashedPassword,
         provider: "CREDENTIALS",
-        verificationToken: createId(),
+        verificationToken: emailVerificationToken,
       },
     });
 
