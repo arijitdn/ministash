@@ -180,7 +180,7 @@ export function FileBrowser() {
             onClick={() => fetchFiles(true)}
             className="cursor-pointer"
           >
-            <RefreshCcw /> Refresh
+            <RefreshCcw /> <span className="hidden md:block">Refresh</span>
           </Button>
           <Button
             onClick={() => router.push("/upload")}
