@@ -15,16 +15,16 @@ export function Uploader({
   userId,
   maxLimit,
   maxFilesUploadLimit,
-  currentPlan,
   currentUsedFiles,
   currentUsedStorage,
+  storageLimitInBytes,
 }: {
   userId: string;
   maxLimit: number;
   maxFilesUploadLimit: number;
   currentUsedFiles: number;
   currentUsedStorage: number;
-  currentPlan: "FREE" | "BASIC" | "PRO" | "CUSTOM";
+  storageLimitInBytes: number;
 }) {
   const [files, setFiles] = useState<
     Array<{
@@ -173,8 +173,6 @@ export function Uploader({
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const storageLimitInBytes = plans[currentPlan].storageLimit * 1024 * 1024;
-
       const newFiles = acceptedFiles.map((file) => ({
         id: createId(),
         file,
@@ -201,7 +199,7 @@ export function Uploader({
 
       if (newTotalSize > storageLimitInBytes) {
         toast.error(
-          `Uploading these files exceeds your storage limit of ${plans[currentPlan].storageLimit} MB.`
+          `Uploading these files exceeds your storage limit. Upgrade your plan for more storage.`
         );
         return;
       }
@@ -209,7 +207,7 @@ export function Uploader({
       setFiles((prev) => [...prev, ...newFiles]);
       acceptedFiles.forEach(uploadFile);
     },
-    [files, currentUsedFiles, currentUsedStorage, maxLimit, currentPlan]
+    [files, currentUsedFiles, currentUsedStorage, maxLimit]
   );
 
   const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {

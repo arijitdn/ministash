@@ -171,10 +171,11 @@ export default function Files() {
             variant="outline"
             size="icon"
             onClick={() => router.push("/profile")}
+            className="cursor-pointer"
           >
             <User />
           </Button>
-          <Button onClick={() => fetchFiles(true)}>
+          <Button onClick={() => fetchFiles(true)} className="cursor-pointer">
             <RefreshCcw /> Refresh
           </Button>
         </div>

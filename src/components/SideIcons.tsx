@@ -16,12 +16,17 @@ export const SideIcons = () => {
           variant="outline"
           size="icon"
           onClick={() => router.push("/profile")}
+          className="cursor-pointer"
         >
           <User />
         </Button>
       )}
       {path !== "/files" && (
-        <Button variant="outline" onClick={() => router.push("/files")}>
+        <Button
+          variant="outline"
+          onClick={() => router.push("/files")}
+          className="cursor-pointer"
+        >
           <FolderOpen />
           <span>Files</span>
         </Button>

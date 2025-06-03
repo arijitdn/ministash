@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Billing" ADD COLUMN     "price" INTEGER NOT NULL DEFAULT 0;

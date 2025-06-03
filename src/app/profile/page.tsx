@@ -51,21 +51,34 @@ export default async function ProfilePage() {
   const totalUsageMBNum = parseFloat(totalUsageMB);
   const usageInGB = totalUsageMBNum / 1000;
 
+  const currentPlan = userData?.plan ?? "FREE";
+  const currentPrice =
+    userData?.plan === "CUSTOM"
+      ? userData?.price
+      : plans[(userData?.plan ?? "FREE") as keyof typeof plans].price;
+  const currentStorageLimit =
+    userData?.plan === "CUSTOM"
+      ? userData?.storageLimit / 1000
+      : plans[(userData?.plan ?? "FREE") as keyof typeof plans].storageLimit /
+        1000;
+  const currentFilesLimit =
+    userData?.plan === "CUSTOM"
+      ? userData?.filesLimit
+      : plans[(userData?.plan ?? "FREE") as keyof typeof plans].filesLimit;
+  const currentUploadLimit =
+    userData?.plan === "CUSTOM"
+      ? userData?.fileUploadLimit
+      : plans[(userData?.plan ?? "FREE") as keyof typeof plans].uploadLimit;
+
   const usedStorageLimitDisplay =
     usageInGB < 1
       ? `${totalUsageMBNum.toFixed(2)} MB`
       : `${usageInGB.toFixed(2)} GB`;
 
-  const currentPlan = userData?.plan ?? "FREE";
-  const currentPrice =
-    plans[(userData?.plan ?? "FREE") as keyof typeof plans].price;
-
-  const currentStorageLimit =
-    plans[(userData?.plan ?? "FREE") as keyof typeof plans].storageLimit / 1000;
-  const currentFilesLimit =
-    plans[(userData?.plan ?? "FREE") as keyof typeof plans].filesLimit;
-  const currentUploadLimit =
-    plans[(userData?.plan ?? "FREE") as keyof typeof plans].uploadLimit;
+  const currentStorageLimitDisplay =
+    currentStorageLimit >= 1
+      ? `${currentStorageLimit.toFixed(2)} GB`
+      : `${(currentStorageLimit * 1000).toFixed(2)} MB`;
 
   const storageUsedPercent = (usedStorageLimit / currentStorageLimit) * 100;
   const filesUsedPercent = (usedFilesLimit / currentFilesLimit) * 100;
@@ -160,7 +173,7 @@ export default async function ProfilePage() {
                       <div>
                         <div className="flex justify-between text-sm mb-1">
                           <span>{usedStorageLimitDisplay}</span>
-                          <span>{currentStorageLimit} GB total</span>
+                          <span>{currentStorageLimitDisplay} total</span>
                         </div>
                         <Progress
                           value={storageUsedPercent}
@@ -197,9 +210,9 @@ export default async function ProfilePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="rounded-lg border border-gray-800 p-4 mb-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-col md:flex-row">
                         <div>
-                          <h3 className="font-medium flex items-center">
+                          <h3 className="font-medium flex flex-col md:flex-row items-center">
                             <Badge
                               className={`mr-2 ${
                                 currentPlan === "FREE"
@@ -209,9 +222,9 @@ export default async function ProfilePage() {
                             >
                               {currentPlan}
                             </Badge>
-                            ₹ {currentPrice}/month
+                            <span>₹ {currentPrice}/month</span>
                           </h3>
-                          <p className="text-sm text-gray-400 mt-1">
+                          <p className="text-sm text-gray-400 mt-1 text-center md:text-left">
                             Billed monthly
                           </p>
                         </div>
@@ -242,7 +255,7 @@ export default async function ProfilePage() {
                             } mr-2`}
                           />
                           <span className="text-sm">
-                            {currentStorageLimit} GB storage
+                            {currentStorageLimitDisplay} storage limit
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -254,7 +267,7 @@ export default async function ProfilePage() {
                             } mr-2`}
                           />
                           <span className="text-sm">
-                            {currentFilesLimit} file limit
+                            {currentFilesLimit} files limit
                           </span>
                         </div>
                         <div className="flex items-center">

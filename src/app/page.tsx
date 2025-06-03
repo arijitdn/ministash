@@ -27,8 +27,18 @@ export default async function Home() {
     },
   });
   const { totalUsageMB, totalFiles } = await res.json();
-  const maxFilesAllowedAtATime = plans[userData?.plan ?? "FREE"].uploadLimit;
-  const maxFilesAllowed = plans[userData?.plan ?? "FREE"].filesLimit;
+  const maxFilesAllowedAtATime =
+    userData?.plan === "CUSTOM"
+      ? userData.fileUploadLimit
+      : plans[userData?.plan ?? "FREE"].uploadLimit;
+  const maxFilesAllowed =
+    userData?.plan === "CUSTOM"
+      ? userData.filesLimit
+      : plans[userData?.plan ?? "FREE"].filesLimit;
+  const storageLimitInBytes =
+    userData?.plan === "CUSTOM"
+      ? userData.storageLimit * 1024 * 1024
+      : plans[userData?.plan ?? "FREE"].storageLimit * 1024 * 1024;
 
   return (
     <>
@@ -48,9 +58,9 @@ export default async function Home() {
           userId={userData?.userId ?? session.user.id ?? ""}
           maxLimit={maxFilesAllowed}
           maxFilesUploadLimit={maxFilesAllowedAtATime}
-          currentPlan={userData?.plan ?? "FREE"}
           currentUsedFiles={totalFiles}
           currentUsedStorage={totalUsageMB}
+          storageLimitInBytes={storageLimitInBytes}
         />
       </div>
     </>
