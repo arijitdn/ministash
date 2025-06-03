@@ -3,7 +3,7 @@
 import { z } from "zod";
 import db from "../db";
 import bcrypt from "bcryptjs";
-import { signUpSchema } from "@/app/auth/signup/page";
+import { signUpSchema } from "@/lib/zod/schema";
 
 export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   const userExists = await db.user.findFirst({

@@ -20,11 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { signInAction } from "@/lib/actions/signIn";
-
-export const signInSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+import { signInSchema } from "@/lib/zod/schema";
 
 export default function SignInPage() {
   const form = useForm({

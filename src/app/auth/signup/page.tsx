@@ -20,13 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpAction } from "@/lib/actions/signup";
 import { toast } from "sonner";
-
-export const signUpSchema = z.object({
-  firstName: z.string().min(3),
-  lastName: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+import { signUpSchema } from "@/lib/zod/schema";
 
 export default function SignUpPage() {
   const form = useForm({

@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { signInSchema } from "@/app/auth/signin/page";
+import { signInSchema } from "@/lib/zod/schema";
 import db from "../db";
 import bcrypt from "bcryptjs";
 import { signIn } from "../auth";
