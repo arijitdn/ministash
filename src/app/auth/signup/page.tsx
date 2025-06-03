@@ -39,9 +39,11 @@ export default function SignUpPage() {
     setIsLoading(true);
     const res = await signUpAction(data);
 
+    console.log(res);
+
     if (!res.success) {
       setIsLoading(false);
-      return toast.error(res.error);
+      return toast.error(res.message);
     }
 
     toast.success(res.message);

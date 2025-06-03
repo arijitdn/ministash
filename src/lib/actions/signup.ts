@@ -4,6 +4,10 @@ import { z } from "zod";
 import db from "../db";
 import bcrypt from "bcryptjs";
 import { signUpSchema } from "@/lib/zod/schema";
+import { createId } from "@paralleldrive/cuid2";
+import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
+import { VerifyEmail } from "@/email/verifyEmail";
 
 export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   const userExists = await db.user.findFirst({
@@ -15,7 +19,7 @@ export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   if (userExists) {
     return {
       success: false,
-      error: "User already exists with this email address",
+      message: "User already exists with this email address",
     };
   }
 
@@ -23,13 +27,39 @@ export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   const hashedPassword = await bcrypt.hash(data.password, salt);
 
   try {
+    const emailVerificationToken = createId();
+
     const user = await db.user.create({
       data: {
         name: data.firstName + " " + data.lastName,
         email: data.email,
         password: hashedPassword,
         provider: "CREDENTIALS",
+        verificationToken: createId(),
       },
+    });
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+      secure: Boolean(process.env.SMTP_SECURE),
+    });
+
+    const verificationMailHtml = await render(
+      VerifyEmail({
+        verificationToken: emailVerificationToken,
+      })
+    );
+
+    await transporter.sendMail({
+      from: `Verify Email Address <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: "Verify your Email Address",
+      html: verificationMailHtml,
     });
 
     if (user) {
