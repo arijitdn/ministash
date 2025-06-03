@@ -46,7 +46,21 @@ export async function POST(request: Request) {
     }
 
     const { filename, contentType, size } = validation.data;
-    const uniqueKey = `${userId}/${filename}-${createId()}`;
+
+    function generateNewFilename(filename: string) {
+      const cuid = createId();
+      const dotIndex = filename.lastIndexOf(".");
+
+      if (dotIndex === -1) {
+        return `${filename}-${cuid}`;
+      }
+
+      const name = filename.substring(0, dotIndex);
+      const extension = filename.substring(dotIndex);
+      return `${name}-${cuid}${extension}`;
+    }
+
+    const uniqueKey = `${userId}/${generateNewFilename(filename)}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME,
