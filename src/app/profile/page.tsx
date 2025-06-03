@@ -79,13 +79,30 @@ export default async function ProfilePage() {
       ? `${totalUsageMBNum.toFixed(2)} MB`
       : `${usageInGB.toFixed(2)} GB`;
 
-  const currentStorageLimitDisplay =
-    currentStorageLimit >= 1
-      ? `${currentStorageLimit.toFixed(2)} GB`
-      : `${(currentStorageLimit * 1000).toFixed(2)} MB`;
+  let currentStorageLimitDisplay;
+  if (currentStorageLimit < 0) {
+    currentStorageLimitDisplay = "unlimited";
+  } else {
+    currentStorageLimitDisplay =
+      currentStorageLimit >= 1
+        ? `${currentStorageLimit.toFixed(2)} GB`
+        : `${(currentStorageLimit * 1000).toFixed(2)} MB`;
+  }
 
-  const storageUsedPercent = (usedStorageLimit / currentStorageLimit) * 100;
-  const filesUsedPercent = (usedFilesLimit / currentFilesLimit) * 100;
+  let storageUsedPercent;
+  if (currentStorageLimit < 0) {
+    storageUsedPercent = 0;
+  } else {
+    storageUsedPercent = (usedStorageLimit / currentStorageLimit) * 100;
+  }
+
+  let filesUsedPercent;
+
+  if (currentFilesLimit < 0) {
+    filesUsedPercent = 0;
+  } else {
+    filesUsedPercent = (usedFilesLimit / currentFilesLimit) * 100;
+  }
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-gray-100">
@@ -117,6 +134,7 @@ export default async function ProfilePage() {
                     <AvatarImage
                       src={
                         session.user.image ??
+                        userData.imageUrl ??
                         "https://s3.adnsys.eu.org/assets/avatar-placeholder.png"
                       }
                     />
@@ -177,7 +195,7 @@ export default async function ProfilePage() {
                       <div>
                         <div className="flex justify-between text-sm mb-1">
                           <span>{usedStorageLimitDisplay}</span>
-                          <span>{currentStorageLimitDisplay} total</span>
+                          <span>{currentStorageLimitDisplay}</span>
                         </div>
                         <Progress
                           value={storageUsedPercent}
@@ -191,7 +209,8 @@ export default async function ProfilePage() {
                         <div className="flex justify-between text-sm mb-1">
                           <span>Files</span>
                           <span>
-                            {usedFilesLimit} / {currentFilesLimit}
+                            {usedFilesLimit} /{" "}
+                            {currentFilesLimit < 0 ? "∞" : currentFilesLimit}
                           </span>
                         </div>
                         <Progress
@@ -259,7 +278,10 @@ export default async function ProfilePage() {
                             } mr-2`}
                           />
                           <span className="text-sm">
-                            {currentStorageLimitDisplay} storage limit
+                            {currentStorageLimitDisplay === "unlimited"
+                              ? "Unlimited"
+                              : currentStorageLimitDisplay}{" "}
+                            storage limit
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -271,7 +293,10 @@ export default async function ProfilePage() {
                             } mr-2`}
                           />
                           <span className="text-sm">
-                            {currentFilesLimit} files limit
+                            {currentFilesLimit < 0
+                              ? "Unlimited"
+                              : currentFilesLimit}{" "}
+                            files limit
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -283,7 +308,11 @@ export default async function ProfilePage() {
                             } mr-2`}
                           />
                           <span className="text-sm">
-                            Upload {currentUploadLimit} files at a time
+                            Upload{" "}
+                            {currentUploadLimit < 0
+                              ? "Unlimited"
+                              : currentUploadLimit}{" "}
+                            files at a time
                           </span>
                         </div>
                       </div>
