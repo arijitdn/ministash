@@ -72,7 +72,7 @@ export default async function VerifyEmailAddress({
     },
     data: {
       verified: true,
-      verificationToken: "",
+      verificationToken: null,
     },
   });
 
