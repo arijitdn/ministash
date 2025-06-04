@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { Check, LogIn, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export default async function VerifyEmailAddress({
   searchParams,
@@ -10,6 +11,10 @@ export default async function VerifyEmailAddress({
   searchParams: Promise<{ token: string }>;
 }) {
   const token = (await searchParams).token;
+
+  if (!token) {
+    return notFound();
+  }
 
   const user = await db.user.findFirst({
     where: {
@@ -106,10 +111,12 @@ export default async function VerifyEmailAddress({
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button className="bg-orange-700 hover:bg-orange-800 flex items-center gap-2 cursor-pointer">
-              <LogIn className="h-4 w-4" />
-              Sign In
-            </Button>
+            <Link href="/auth/signin">
+              <Button className="bg-orange-700 hover:bg-orange-800 flex items-center gap-2 cursor-pointer">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            </Link>
           </div>
 
           {/* Help Text */}

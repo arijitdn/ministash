@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
   const isRoot = pathname === "/";
@@ -23,6 +23,25 @@ export default auth((req) => {
     const newUrl = new URL("/api/auth/signin", req.nextUrl.origin);
     return Response.redirect(newUrl);
   } else {
+    if (req.nextUrl.pathname !== "/auth/error") {
+      const userResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth/validate`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const isUser = await userResponse.json();
+
+      if (!isUser.found) {
+        const newUrl = new URL("/auth/error", req.nextUrl.origin);
+        return Response.redirect(newUrl);
+      }
+    }
+
     // If authenticated, block / and /auth/** except /auth/error
     if (isRoot || isAuthPage) {
       const newUrl = new URL("/files", req.nextUrl.origin);
@@ -34,5 +53,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|icon.svg).*)"],
+  matcher: ["/((?!api/oauth|api/auth|_next/static|_next/image|icon.svg).*)"],
 };

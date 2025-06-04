@@ -44,6 +44,7 @@ export default function SignUpPage() {
     }
 
     toast.success(res.message);
+    form.reset();
     setIsLoading(false);
   }
 

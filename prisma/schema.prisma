@@ -36,3 +36,10 @@ model User {
   verificationToken   String?  @unique
   forgotPasswordToken String?  @unique
 }
+
+model OAuthToken {
+  id    String  @id @default(cuid())
+  token String  @unique @default(cuid())
+  email String  @unique
+  ip    String?
+}

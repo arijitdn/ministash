@@ -5,9 +5,9 @@ import db from "../db";
 import bcrypt from "bcryptjs";
 import { signUpSchema } from "@/lib/zod/schema";
 import { createId } from "@paralleldrive/cuid2";
-import nodemailer from "nodemailer";
 import { render } from "@react-email/render";
-import { VerifyEmail } from "@/email/verifyEmail";
+import { VerifyEmailComponent } from "@/components/email/verifyEmail";
+import { transporter } from "../transporter";
 
 export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   const userExists = await db.user.findFirst({
@@ -39,18 +39,8 @@ export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
       },
     });
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-      secure: Boolean(process.env.SMTP_SECURE),
-    });
-
     const verificationMailHtml = await render(
-      VerifyEmail({
+      VerifyEmailComponent({
         verificationToken: emailVerificationToken,
       })
     );

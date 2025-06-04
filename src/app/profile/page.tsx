@@ -40,10 +40,6 @@ export default async function ProfilePage() {
     },
   });
 
-  if (!userData) {
-    redirect("/auth/error");
-  }
-
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/s3/usage`, {
     headers: {
       cookie: cookieHeader,
@@ -134,7 +130,7 @@ export default async function ProfilePage() {
                     <AvatarImage
                       src={
                         session.user.image ??
-                        userData.imageUrl ??
+                        userData?.imageUrl ??
                         "https://s3.adnsys.eu.org/assets/avatar-placeholder.png"
                       }
                     />

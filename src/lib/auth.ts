@@ -11,8 +11,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: {},
         password: {},
+        oauth: {},
       },
       authorize: async (credentials) => {
+        if (credentials.oauth) {
+          const data = await db.oAuthToken.findFirst({
+            where: {
+              token: credentials.oauth,
+            },
+          });
+
+          if (!data) return null;
+
+          const oAuthUser = await db.user.findFirst({
+            where: {
+              email: data.email,
+            },
+          });
+
+          if (!oAuthUser) return null;
+
+          await db.oAuthToken.delete({
+            where: {
+              token: data.token,
+            },
+          });
+
+          return oAuthUser;
+        } else {
+        }
         if (!credentials?.email || !credentials?.password) {
           return null;
         }

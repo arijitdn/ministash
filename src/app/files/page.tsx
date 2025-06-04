@@ -12,9 +12,5 @@ export default async function Files() {
     },
   });
 
-  if (!user || !user.userId) {
-    redirect("/auth/error");
-  }
-
   return <FileBrowser />;
 }
