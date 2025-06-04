@@ -3,11 +3,9 @@
 import { redis } from "@/lib/redis";
 import { S3 } from "@/lib/S3Client";
 import {
-  GetObjectCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandOutput,
 } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function refreshS3Cache(userId: string) {
   let continuationToken;
@@ -23,14 +21,7 @@ export async function refreshS3Cache(userId: string) {
     const response = (await S3.send(command)) as ListObjectsV2CommandOutput;
 
     for (const obj of response.Contents || []) {
-      const url = await getSignedUrl(
-        S3,
-        new GetObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
-          Key: obj.Key!,
-        }),
-        { expiresIn: 3600 }
-      );
+      const url = `https://s3.adnsys.eu.org/${process.env.S3_BUCKET_NAME}/${obj.Key}`;
 
       documents.push({
         key: obj.Key,

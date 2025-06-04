@@ -39,7 +39,6 @@ import { useRouter } from "next/navigation";
 interface FileItem {
   key: string;
   url: string;
-  isPublic: boolean;
   size: number;
 }
 
@@ -66,14 +65,12 @@ export function FileBrowser() {
       if (data) {
         const enhancedFiles = data.documents.map((file: any) => ({
           ...file,
-          isPublic: file.isPublic ?? false,
           displayName: file.key.split("/")[1],
         }));
 
         setFiles(enhancedFiles);
       }
     } catch (error) {
-      console.error("Failed to fetch files:", error);
       toast.error("Failed to load files. Please try again.");
     } finally {
       setLoading(false);
@@ -120,23 +117,6 @@ export function FileBrowser() {
       );
     }
   }
-
-  const toggleVisibility = async (fileKey: string) => {
-    try {
-      const file = files.find((f) => f.key === fileKey);
-      const newVisibility = !file?.isPublic;
-
-      setFiles(
-        files.map((f) =>
-          f.key === fileKey ? { ...f, isPublic: newVisibility } : f
-        )
-      );
-
-      toast.success(`File is now ${newVisibility ? "public" : "private"}`);
-    } catch (error) {
-      toast.error("Failed to update file visibility");
-    }
-  };
 
   const copyLink = async (url: string, fileKey: string) => {
     try {
@@ -214,30 +194,6 @@ export function FileBrowser() {
                       />
                     </a>
 
-                    {/* Visibility Badge */}
-                    <div className="absolute top-2 left-2">
-                      <Badge
-                        variant={doc.isPublic ? "default" : "secondary"}
-                        className={`text-xs ${
-                          doc.isPublic
-                            ? "bg-green-600 hover:bg-green-600"
-                            : "bg-primary hover:bg-primary"
-                        }`}
-                      >
-                        {doc.isPublic ? (
-                          <>
-                            <Eye size={10} className="mr-1" />
-                            Public
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff size={10} className="mr-1" />
-                            Private
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-
                     {/* Action Menu */}
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -251,21 +207,6 @@ export function FileBrowser() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-48">
-                          <DropdownMenuItem
-                            onClick={() => toggleVisibility(doc.key)}
-                          >
-                            {doc.isPublic ? (
-                              <>
-                                <EyeOff size={16} className="mr-2" />
-                                {doc.isPublic ? "Make Private" : "Make Public"}
-                              </>
-                            ) : (
-                              <>
-                                <Eye size={16} className="mr-2" />
-                                {doc.isPublic ? "Make Private" : "Make Public"}
-                              </>
-                            )}
-                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => copyLink(doc.url, doc.key)}
                           >
@@ -286,14 +227,12 @@ export function FileBrowser() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <a href={doc.url} download>
+                            <Link
+                              href={`/api/s3/download?key=${encodeURIComponent(doc.key)}`}
+                            >
                               <Download size={16} className="mr-2" />
                               Download
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Share2 size={16} className="mr-2" />
-                            Share
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -327,24 +266,6 @@ export function FileBrowser() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex justify-center"
-                            >
-                              {doc.isPublic ? (
-                                <Lock size={12} className="mr-1" />
-                              ) : (
-                                <Eye size={12} className="mr-1" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                        </Tooltip>
-                      </TooltipProvider>
-
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
                               className="h-8 px-2"
                               onClick={() => copyLink(doc.url, doc.key)}
                             >
@@ -361,6 +282,28 @@ export function FileBrowser() {
                                 ? "Copied!"
                                 : "Copy Link"}
                             </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2"
+                              asChild
+                            >
+                              <Link
+                                href={`/api/s3/download?key=${encodeURIComponent(doc.key)}`}
+                              >
+                                <Download size={12} className="mr-1" />
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Download</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -391,19 +334,20 @@ export function FileBrowser() {
                               variant="outline"
                               size="sm"
                               className="flex-1 h-8 text-xs"
+                              onClick={() => copyLink(doc.url, doc.key)}
                             >
-                              {doc.isPublic ? (
-                                <Lock size={12} className="mr-1" />
+                              {copiedFileKey === doc.key ? (
+                                <Check size={12} className="text-green-500" />
                               ) : (
-                                <Eye size={12} className="mr-1" />
+                                <Copy size={12} />
                               )}
-                              {doc.isPublic ? "Make Private" : "Make Public"}
+                              {copiedFileKey === doc.key
+                                ? "Copied!"
+                                : "Copy Link"}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>
-                              {doc.isPublic ? "Make Private" : "Make Public"}
-                            </p>
+                            <p>Copy Link</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -415,21 +359,17 @@ export function FileBrowser() {
                               variant="outline"
                               size="sm"
                               className="h-8 px-2"
-                              onClick={() => copyLink(doc.url, doc.key)}
+                              asChild
                             >
-                              {copiedFileKey === doc.key ? (
-                                <Check size={12} className="text-green-500" />
-                              ) : (
-                                <Copy size={12} />
-                              )}
+                              <Link
+                                href={`/api/s3/download?key=${encodeURIComponent(doc.key)}`}
+                              >
+                                <Download size={12} className="mr-1" />
+                              </Link>
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>
-                              {copiedFileKey === doc.key
-                                ? "Copied!"
-                                : "Copy Link"}
-                            </p>
+                            <p>Download</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
