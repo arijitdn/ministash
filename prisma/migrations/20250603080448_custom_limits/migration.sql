@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Billing" ADD COLUMN     "fileUploadLimit" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "filesLimit" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "storageLimit" INTEGER NOT NULL DEFAULT 0;
