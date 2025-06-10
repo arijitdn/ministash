@@ -27,7 +27,7 @@ export async function GET() {
       );
     }
 
-    const userId = userData.userId;
+    const userId = userData.id;
     let isTruncated = true;
     let continuationToken;
     let totalSize = 0;

@@ -33,8 +33,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const userId = userData.userId;
-
     const body = await request.json();
     const validation = uploadRequestSchema.safeParse(body);
 
@@ -60,7 +58,7 @@ export async function POST(request: Request) {
       return `${name}-${cuid}${extension}`;
     }
 
-    const uniqueKey = `${userId}/${generateNewFilename(filename)}`;
+    const uniqueKey = `${userData.id}/${generateNewFilename(filename)}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME,
@@ -70,7 +68,7 @@ export async function POST(request: Request) {
     });
 
     const presignedUrl = await getSignedUrl(S3, command, {
-      expiresIn: 360, // URL expires in 6 minutes
+      expiresIn: 360,
     });
 
     const response = {

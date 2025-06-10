@@ -23,12 +23,10 @@ export async function GET(request: Request) {
     );
   }
 
-  const userId = userData.userId;
-
   const url = new URL(request.url);
   const forceRefresh = url.searchParams.get("refresh") === "true";
 
-  const cacheKey = `s3:documents:${userId}`;
+  const cacheKey = `s3:documents:${userData.id}`;
 
   try {
     if (!forceRefresh) {
@@ -38,7 +36,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const documents = await refreshS3Cache(userId);
+    const documents = await refreshS3Cache(userData.id);
     return NextResponse.json({ documents: documents });
   } catch (error) {
     console.error(error);
