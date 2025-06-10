@@ -61,7 +61,7 @@ export default async function Home() {
           MiniStash
         </h1>
         <Uploader
-          userId={userData?.userId ?? session!.user?.id ?? ""}
+          userId={userData?.id ?? session!.user?.id ?? ""}
           maxLimit={maxFilesAllowed}
           maxFilesUploadLimit={maxFilesAllowedAtATime}
           currentUsedFiles={totalFiles}
