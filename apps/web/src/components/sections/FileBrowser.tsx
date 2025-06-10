@@ -188,7 +188,11 @@ export function FileBrowser() {
                   <div className="relative aspect-square rounded-lg overflow-hidden">
                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
                       <img
-                        src={doc.url || "/placeholder.svg"}
+                        src={
+                          doc.key.endsWith(".pdf")
+                            ? "/document.png"
+                            : doc.url || "/placeholder.jpg"
+                        }
                         alt={doc.key.split("/")[1]}
                         className="w-full h-full object-cover"
                       />

@@ -235,6 +235,7 @@ export function Uploader({
     maxSize: 1024 * 1024 * 10, // 10mb
     accept: {
       "image/*": [],
+      "application/pdf": [],
     },
   });
 
@@ -289,7 +290,11 @@ export function Uploader({
                 <div key={id} className="flex flex-col gap-1">
                   <div className="relative aspect-square rounded-lg overflow-hidden">
                     <img
-                      src={objectUrl}
+                      src={
+                        file.type.startsWith("application/pdf")
+                          ? "/document.png"
+                          : objectUrl
+                      }
                       alt={file.name}
                       className="w-full h-full object-cover"
                     />
