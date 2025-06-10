@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev --skip-generate",
+    "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
+    "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset --force",
     "db:push": "prisma db push --force-reset"
   },
