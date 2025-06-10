@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { signInAction } from "@/actions/signIn";
-import { signInSchema } from "@/lib/zod/schema";
+import { signInSchema } from "@/lib/zodSchema";
 import { useState } from "react";
 
 export default function SignInPage() {

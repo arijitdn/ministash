@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sendResetPasswordLinkAction } from "@/actions/resetPassword";
-import { resetPasswordSchema } from "@/lib/zod/schema";
+import { resetPasswordSchema } from "@/lib/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";

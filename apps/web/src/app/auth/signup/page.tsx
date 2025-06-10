@@ -19,7 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpAction } from "@/actions/signup";
 import { toast } from "sonner";
-import { signUpSchema } from "@/lib/zod/schema";
+import { signUpSchema } from "@/lib/zodSchema";
 import { useState } from "react";
 
 export default function SignUpPage() {

@@ -6,7 +6,7 @@ import { render } from "@react-email/render";
 import { ResetPasswordEmailComponent } from "@/components/email/resetPassword";
 import { createId } from "@paralleldrive/cuid2";
 import bcrypt from "bcryptjs";
-import { resetPasswordSchema } from "@/lib/zod/schema";
+import { resetPasswordSchema } from "@/lib/zodSchema";
 import { transporter } from "@/lib/transporter";
 
 export const sendResetPasswordLinkAction = async (

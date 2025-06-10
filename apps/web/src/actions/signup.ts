@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { db } from "@repo/db";
 import bcrypt from "bcryptjs";
-import { signUpSchema } from "@/lib/zod/schema";
+import { signUpSchema } from "@/lib/zodSchema";
 import { createId } from "@paralleldrive/cuid2";
 import { render } from "@react-email/render";
 import { VerifyEmailComponent } from "@/components/email/verifyEmail";
