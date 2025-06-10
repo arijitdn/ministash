@@ -2,9 +2,9 @@
 
 import { z } from "zod";
 import { signInSchema } from "@/lib/zod/schema";
-import db from "../db";
+import { db } from "@repo/db";
 import bcrypt from "bcryptjs";
-import { signIn } from "../auth";
+import { signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
 
 export const signInAction = async (data: z.infer<typeof signInSchema>) => {

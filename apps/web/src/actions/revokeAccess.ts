@@ -1,6 +1,6 @@
 "use server";
 
-import db from "../db";
+import { db } from "@repo/db";
 
 export const revokeAllAccessAction = async (email: string) => {
   const user = await db.user.findFirst({

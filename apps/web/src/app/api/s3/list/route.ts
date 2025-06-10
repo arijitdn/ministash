@@ -1,8 +1,8 @@
 import { redis } from "@/lib/redis";
-import { refreshS3Cache } from "@/lib/actions/refreshS3Cache";
+import { refreshS3Cache } from "@/actions/refreshS3Cache";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 
 export async function GET(request: Request) {
   const session = await auth();

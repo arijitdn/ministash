@@ -1,5 +1,5 @@
 import { ResetPassword } from "@/components/web/ResetPassword";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

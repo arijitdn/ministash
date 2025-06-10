@@ -1,7 +1,7 @@
 import { SideIcons } from "@/components/SideIcons";
 import { Uploader } from "@/components/web/Uploader";
 import { auth } from "@/lib/auth";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 import { plans } from "@/lib/plans";
 import { cookies } from "next/headers";
 import Image from "next/image";

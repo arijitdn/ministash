@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Database, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { revokeSessionAction } from "@/lib/actions/revokeAccess";
+import { revokeSessionAction } from "@/actions/revokeAccess";
 
 interface SessionRowProps {
   session: any;

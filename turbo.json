@@ -5,7 +5,23 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "AWS_ENDPOINT_URL_S3",
+        "AWS_REGION",
+        "S3_BUCKET_NAME",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "AUTH_SECRET",
+        "AUTH_GOOGLE_ID",
+        "AUTH_GOOGLE_SECRET",
+        "DATABASE_URL",
+        "SMTP_USER",
+        "SMTP_PASSWORD",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_SECURE"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -15,7 +31,23 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "AWS_ENDPOINT_URL_S3",
+        "AWS_REGION",
+        "S3_BUCKET_NAME",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "AUTH_SECRET",
+        "AUTH_GOOGLE_ID",
+        "AUTH_GOOGLE_SECRET",
+        "DATABASE_URL",
+        "SMTP_USER",
+        "SMTP_PASSWORD",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_SECURE"
+      ]
     }
   }
 }

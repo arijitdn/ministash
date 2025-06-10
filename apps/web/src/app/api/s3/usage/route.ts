@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 import { S3 } from "@/lib/S3Client";
 import {
   ListObjectsV2Command,

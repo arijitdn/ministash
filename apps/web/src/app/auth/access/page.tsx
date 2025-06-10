@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { signOutAndRedirect } from "@/lib/actions/signOutandRedirect";
-import { auth, signIn, signOut } from "@/lib/auth";
-import db from "@/lib/db";
+import { signOutAndRedirect } from "@/actions/signOutandRedirect";
+import { auth, signIn } from "@/lib/auth";
+import { db } from "@repo/db";
 import { ShieldUser } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 export default async function MagicAccess({
   searchParams,

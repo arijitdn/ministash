@@ -5,7 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3 } from "@/lib/S3Client";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 
 const uploadRequestSchema = z.object({
   filename: z.string(),

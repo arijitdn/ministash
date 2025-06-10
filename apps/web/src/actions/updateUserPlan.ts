@@ -1,7 +1,6 @@
 "use server";
 
-import { Plan } from "@prisma/client";
-import db from "../db";
+import { db } from "@repo/db";
 
 export const updateUserPlanAction = async (userId: string, plan: string) => {
   const user = await db.user.findUnique({
@@ -14,7 +13,7 @@ export const updateUserPlanAction = async (userId: string, plan: string) => {
 
   await db.user.update({
     where: { id: userId },
-    data: { plan: plan as Plan },
+    data: { plan: plan as any },
   });
 
   return { success: true, message: "User plan updated successfully" };

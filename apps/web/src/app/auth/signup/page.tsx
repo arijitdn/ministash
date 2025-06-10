@@ -17,7 +17,7 @@ import { ContinueWithGoogle } from "@/components/ContinueWithGoogle";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUpAction } from "@/lib/actions/signup";
+import { signUpAction } from "@/actions/signup";
 import { toast } from "sonner";
 import { signUpSchema } from "@/lib/zod/schema";
 import { useState } from "react";

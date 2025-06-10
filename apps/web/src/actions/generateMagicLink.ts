@@ -1,6 +1,6 @@
 "use server";
 
-import db from "../db";
+import { db } from "@repo/db";
 
 export const generateMagicLinkAction = async (email: string) => {
   const user = await db.user.findFirst({

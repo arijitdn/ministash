@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Copy, Link, Mail, Zap } from "lucide-react";
 import { toast } from "sonner";
-import { generateMagicLinkAction } from "@/lib/actions/generateMagicLink";
+import { generateMagicLinkAction } from "@/actions/generateMagicLink";
 
 interface MagicLinksTabProps {
   email: string;

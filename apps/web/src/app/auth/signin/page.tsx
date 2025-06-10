@@ -19,7 +19,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { signInAction } from "@/lib/actions/signIn";
+import { signInAction } from "@/actions/signIn";
 import { signInSchema } from "@/lib/zod/schema";
 import { useState } from "react";
 

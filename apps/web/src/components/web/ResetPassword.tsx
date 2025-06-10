@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { toast } from "sonner";
-import { resetPasswordAction } from "@/lib/actions/resetPassword";
+import { resetPasswordAction } from "@/actions/resetPassword";
 import { redirect } from "next/navigation";
 
 const resetPasswordSchema = z.object({

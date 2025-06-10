@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sendResetPasswordLinkAction } from "@/lib/actions/resetPassword";
+import { sendResetPasswordLinkAction } from "@/actions/resetPassword";
 import { resetPasswordSchema } from "@/lib/zod/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";

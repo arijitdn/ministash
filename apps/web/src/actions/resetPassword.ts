@@ -1,13 +1,13 @@
 "use server";
 
 import { z } from "zod";
-import { resetPasswordSchema } from "../zod/schema";
-import db from "../db";
+import { db } from "@repo/db";
 import { render } from "@react-email/render";
 import { ResetPasswordEmailComponent } from "@/components/email/resetPassword";
 import { createId } from "@paralleldrive/cuid2";
-import { transporter } from "../transporter";
 import bcrypt from "bcryptjs";
+import { resetPasswordSchema } from "@/lib/zod/schema";
+import { transporter } from "@/lib/transporter";
 
 export const sendResetPasswordLinkAction = async (
   data: z.infer<typeof resetPasswordSchema>

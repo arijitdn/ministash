@@ -1,13 +1,13 @@
 "use server";
 
 import { z } from "zod";
-import db from "../db";
+import { db } from "@repo/db";
 import bcrypt from "bcryptjs";
 import { signUpSchema } from "@/lib/zod/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { render } from "@react-email/render";
 import { VerifyEmailComponent } from "@/components/email/verifyEmail";
-import { transporter } from "../transporter";
+import { transporter } from "@/lib/transporter";
 
 export const signUpAction = async (data: z.infer<typeof signUpSchema>) => {
   const userExists = await db.user.findFirst({

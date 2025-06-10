@@ -18,7 +18,7 @@ import { SideIcons } from "@/components/SideIcons";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/LogoutButton";
-import db from "@/lib/db";
+import { db } from "@repo/db";
 import { plans } from "@/lib/plans";
 import { cookies } from "next/headers";
 

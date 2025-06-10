@@ -33,9 +33,9 @@ import {
 import { Edit, Settings, ShieldOff, Crown, User } from "lucide-react";
 import { toast } from "sonner";
 import { plans } from "@/lib/plans";
-import { updateUserPlanAction } from "@/lib/actions/updateUserPlan";
-import { updateCustomTierLimitsAction } from "@/lib/actions/updateCustomTierLimits";
-import { revokeAllAccessAction } from "@/lib/actions/revokeAccess";
+import { updateUserPlanAction } from "@/actions/updateUserPlan";
+import { updateCustomTierLimitsAction } from "@/actions/updateCustomTierLimits";
+import { revokeAllAccessAction } from "@/actions/revokeAccess";
 
 interface UserRowProps {
   user: any;

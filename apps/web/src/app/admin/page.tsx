@@ -1,7 +1,7 @@
 import AdminPanel from "@/components/sections/admin/AdminPanel";
 import { auth } from "@/lib/auth";
-import db from "@/lib/db";
 import { notFound } from "next/navigation";
+import { db } from "@repo/db";
 
 export default async function AdminPage() {
   const session = await auth();

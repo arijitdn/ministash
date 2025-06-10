@@ -7,7 +7,7 @@ import { FileRejection, useDropzone } from "react-dropzone";
 import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2, Trash2 } from "lucide-react";
-import { refreshS3Cache } from "@/lib/actions/refreshS3Cache";
+import { refreshS3Cache } from "@/actions/refreshS3Cache";
 import { createId } from "@paralleldrive/cuid2";
 
 export function Uploader({
