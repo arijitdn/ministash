@@ -120,4 +120,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
+  events: {
+    async signOut(message) {
+      const sessionId = (message as any).token.sessionId as string | undefined;
+
+      if (sessionId) {
+        await db.session.delete({
+          where: {
+            sessionId: sessionId,
+          },
+        });
+      }
+    },
+  },
 });
