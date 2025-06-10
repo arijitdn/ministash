@@ -20,6 +20,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@auth/core':
+        specifier: 0.39.1
+        version: 0.39.1(nodemailer@6.9.4)
       '@aws-sdk/client-s3':
         specifier: ^3.817.0
         version: 3.826.0
